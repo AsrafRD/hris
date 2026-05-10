@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ENUM
+// ============================================
+
+enum JenisPegawai {
+  KONTRAK
+  TETAP
+  MAGANG
+}
+
+enum Gender {
+  PRIA
+  WANITA
+}
+
+enum StatusKawin {
+  BELUM_KAWIN
+  KAWIN
+  CERAI_HIDUP
+  CERAI_MATI
+}
+
+enum AksiLog {
+  LOGIN
+  LOGOUT
+  TAMBAH
+  UBAH
+  HAPUS
+  LIHAT
+  EKSPOR
+}
+
+// ============================================
+// TABEL PERAN & HAK AKSES
+// ============================================
+
+model peran {
+  id_peran    Int      @id @default(autoincrement())
+  nama_peran  String   @unique @db.VarChar(50)
+  deskripsi   String?  @db.VarChar(255)
+  dibuat_pada DateTime @default(now())
+  diperbarui_pada DateTime @updatedAt
+
+  pengguna         pengguna[]
+  peran_hak_akses  peran_hak_akses[]
+
+  @@index([nama_peran])
+}
+
+model hak_akses {
+  id_hak_akses Int      @id @default(autoincrement())
+  nama_akses   String   @unique @db.VarChar(100)
+  modul        String   @db.VarChar(50)
+  deskripsi    String?  @db.VarChar(255)
+  dibuat_pada  DateTime @default(now())
+
+  peran_hak_akses peran_hak_akses[]
+
+  @@index([modul])
+  @@index([nama_akses])
+}
+
+model peran_hak_akses {
+  id_peran     Int
+  id_hak_akses Int
+
+  peran     peran     @relation(fields: [id_peran], references: [id_peran], onDelete: Cascade)
+  hak_akses hak_akses @relation(fields: [id_hak_akses], references: [id_hak_akses], onDelete: Cascade)
+
+  @@id([id_peran, id_hak_akses])
+}
+
+// ============================================
+// TABEL PENGGUNA
+// ============================================
+
+model pengguna {
+  id_pengguna    Int      @id @default(autoincrement())
+  id_pegawai     Int?     @unique
+  nama_pengguna  String   @db.VarChar(100)
+  username       String   @unique @db.VarChar(50)
+  email          String?  @unique @db.VarChar(100)
+  nomor_hp       String?  @unique @db.VarChar(20)
+  kata_sandi     String   @db.VarChar(255)
+  id_peran       Int
+  status_aktif   Boolean  @default(true)
+  foto           String?  @db.VarChar(500)
+  terakhir_login DateTime?
+  dibuat_pada    DateTime @default(now())
+  diperbarui_pada DateTime @updatedAt
+  dihapus_pada   DateTime?
+
+  peran          peran          @relation(fields: [id_peran], references: [id_peran])
+  pegawai        pegawai?       @relation(fields: [id_pegawai], references: [id_pegawai])
+  log_aktivitas  log_aktivitas[]
+
+  @@index([username])
+  @@index([email])
+  @@index([nomor_hp])
+  @@index([id_peran])
+  @@index([status_aktif])
+}
+
+// ============================================
+// TABEL PEGAWAI
+// ============================================
+
+model pegawai {
+  id_pegawai     Int          @id @default(autoincrement())
+  nip            String       @unique @db.VarChar(20)
+  nama_pegawai   String       @db.VarChar(100)
+  email          String?      @unique @db.VarChar(100)
+  nomor_hp       String?      @db.VarChar(20)
+  tempat_lahir   String?      @db.VarChar(100)
+  tanggal_lahir  DateTime?    @db.Date
+  alamat         String?      @db.Text
+  kecamatan      String?      @db.VarChar(100)
+  kabupaten      String?      @db.VarChar(100)
+  provinsi       String?      @db.VarChar(100)
+  gender         Gender
+  status_kawin   StatusKawin  @default(BELUM_KAWIN)
+  jumlah_anak    Int          @default(0)
+  tanggal_masuk  DateTime     @db.Date
+  jabatan        String       @db.VarChar(100)
+  departemen     String       @db.VarChar(100)
+  jenis_pegawai  JenisPegawai
+  foto           String?      @db.VarChar(500)
+  jarak_km       Float?       @default(0)
+  status_aktif   Boolean      @default(true)
+  dibuat_pada    DateTime     @default(now())
+  diperbarui_pada DateTime    @updatedAt
+  dihapus_pada   DateTime?
+
+  pendidikan     pendidikan_pegawai[]
+  pengguna       pengguna?
+  tunjangan_transport tunjangan_transport[]
+
+  @@index([nip])
+  @@index([nama_pegawai])
+  @@index([jabatan])
+  @@index([departemen])
+  @@index([jenis_pegawai])
+  @@index([status_aktif])
+  @@index([tanggal_masuk])
+}
+
+// ============================================
+// TABEL PENDIDIKAN PEGAWAI
+// ============================================
+
+model pendidikan_pegawai {
+  id_pendidikan  Int      @id @default(autoincrement())
+  id_pegawai     Int
+  jenjang        String   @db.VarChar(20)
+  institusi      String   @db.VarChar(200)
+  jurusan        String?  @db.VarChar(100)
+  tahun_lulus    Int?
+  dibuat_pada    DateTime @default(now())
+  diperbarui_pada DateTime @updatedAt
+
+  pegawai pegawai @relation(fields: [id_pegawai], references: [id_pegawai], onDelete: Cascade)
+
+  @@index([id_pegawai])
+}
+
+// ============================================
+// TABEL PENGATURAN TUNJANGAN TRANSPORT
+// ============================================
+
+model pengaturan_tunjangan {
+  id_pengaturan  Int      @id @default(autoincrement())
+  tarif_per_km   Float
+  keterangan     String?  @db.VarChar(255)
+  status_aktif   Boolean  @default(true)
+  dibuat_pada    DateTime @default(now())
+  diperbarui_pada DateTime @updatedAt
+}
+
+// ============================================
+// TABEL TUNJANGAN TRANSPORT
+// ============================================
+
+model tunjangan_transport {
+  id_tunjangan   Int      @id @default(autoincrement())
+  id_pegawai     Int
+  bulan          Int
+  tahun          Int
+  jarak_km       Float
+  hari_masuk     Int
+  tarif_per_km   Float
+  total_tunjangan Float
+  dibuat_pada    DateTime @default(now())
+  diperbarui_pada DateTime @updatedAt
+
+  pegawai pegawai @relation(fields: [id_pegawai], references: [id_pegawai], onDelete: Cascade)
+
+  @@unique([id_pegawai, bulan, tahun])
+  @@index([bulan, tahun])
+  @@index([id_pegawai])
+}
+
+// ============================================
+// TABEL LOG AKTIVITAS
+// ============================================
+
+model log_aktivitas {
+  id_log         Int      @id @default(autoincrement())
+  id_pengguna    Int?
+  modul          String   @db.VarChar(50)
+  aksi           AksiLog
+  keterangan     String?  @db.Text
+  ip_address     String?  @db.VarChar(45)
+  user_agent     String?  @db.Text
+  dibuat_pada    DateTime @default(now())
+
+  pengguna pengguna? @relation(fields: [id_pengguna], references: [id_pengguna], onDelete: SetNull)
+
+  @@index([id_pengguna])
+  @@index([modul])
+  @@index([aksi])
+  @@index([dibuat_pada])
+}

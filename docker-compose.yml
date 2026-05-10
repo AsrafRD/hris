@@ -1,0 +1,19 @@
+services:
+  app:
+    build: .
+    container_name: aplikasi_pegawai
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://Leoraf23:Logitech_Dev_123@db_dev:5432/db_pegawai?schema=public
+    networks:
+      - shared_network
+
+networks:
+  shared_network:
+    external: true

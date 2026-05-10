@@ -1,0 +1,56 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API Sistem Pengelolaan Data Pegawai",
+    "version": "1.0.0",
+    "description": "Dokumentasi API untuk sistem SDM Digital"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Server Lokal"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Login ke sistem",
+        "tags": ["Auth"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "identitas": { "type": "string" },
+                  "kata_sandi": { "type": "string" },
+                  "captcha": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login berhasil" }
+        }
+      }
+    },
+    "/pegawai": {
+      "get": {
+        "summary": "Daftar pegawai",
+        "tags": ["Pegawai"],
+        "parameters": [
+          { "name": "cari", "in": "query", "schema": { "type": "string" } },
+          { "name": "halaman", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Berhasil" } }
+      },
+      "post": {
+        "summary": "Tambah pegawai baru",
+        "tags": ["Pegawai"],
+        "responses": { "201": { "description": "Berhasil" } }
+      }
+    }
+  }
+}
