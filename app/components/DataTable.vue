@@ -31,17 +31,17 @@
           </tr>
         </template>
         <template v-else-if="data.length > 0">
-          <tr v-for="(item, index) in data" :key="item.id || index">
+          <tr v-for="(item, index) in data" :key="item[itemKey] || index">
             <td v-if="selectable" class="ps-4">
               <input 
                 type="checkbox" 
                 class="form-check-input" 
-                :checked="selectedItems.includes(item.id)" 
-                @change="$emit('toggleSelect', item.id)"
+                :checked="selectedItems.includes(item[itemKey])" 
+                @change="$emit('toggleSelect', item[itemKey])"
               >
             </td>
             <td v-for="col in columns" :key="col.key" :class="col.class">
-              <slot :name="`col-${col.key}`" :item="item">
+              <slot :name="`col-${col.key}`" :item="item" :index="index">
                 {{ item[col.key] }}
               </slot>
             </td>
@@ -102,6 +102,7 @@ const props = defineProps({
   meta: { type: Object, default: null },
   selectable: { type: Boolean, default: false },
   selectedItems: { type: Array, default: () => [] },
+  itemKey: { type: String, default: 'id' },
   sortKey: { type: String, default: '' },
   sortOrder: { type: String, default: 'asc' }
 })

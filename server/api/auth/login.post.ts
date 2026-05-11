@@ -71,7 +71,7 @@ export default defineEventHandler(async (event) => {
   }
 
   if (!pengguna.status_aktif) {
-    return gagalResponse('Akun Anda dinonaktifkan. Silakan hubungi admin.', 403)
+    return gagalResponse('Akun sedang dinonaktifkan, silakan konfirmasi ke admin', 403)
   }
 
   // 6. Verifikasi Password

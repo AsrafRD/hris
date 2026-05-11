@@ -176,45 +176,47 @@ const isSidebarMobileOpen = ref(false)
 const expandedMenus = ref([])
 
 const menuItems = computed(() => {
+  const role = user.value?.peran.nama_peran
   const items = [
     { label: 'Menu Utama', isHeader: true },
     { label: 'Dashboard', icon: 'bi bi-grid-fill', to: '/dashboard' },
   ]
 
-  // Data Pegawai Group
-  if (hasPermission('lihat_pegawai')) {
+  // Data Pegawai Group (Kepegawaian)
+  // X for Superadmin, R for Manager HRD, CRUD for Admin HRD
+  if (role === 'Manager HRD' || role === 'Admin HRD') {
     items.push({ 
       label: 'Kepegawaian', icon: 'bi bi-people-fill', to: '/pegawai',
       children: [
         { label: 'Daftar Pegawai', to: '/pegawai' },
-        { label: 'Tambah Pegawai', to: '/pegawai/tambah' }
+        ...(role === 'Admin HRD' ? [{ label: 'Tambah Pegawai', to: '/pegawai/tambah' }] : [])
       ] 
     })
   }
 
   // Tunjangan Group
-  if (hasPermission('lihat_tunjangan')) {
+  // X for Superadmin, RO for Manager HRD, RO/CRUD for Admin HRD
+  if (role === 'Manager HRD' || role === 'Admin HRD') {
+    const children = [{ label: 'Tunjangan Transport', to: '/tunjangan' }]
+    if (role === 'Admin HRD') {
+      children.push({ label: 'Pengaturan Fare', to: '/tunjangan/pengaturan' })
+    }
+    
     items.push({ 
       label: 'Tunjangan', icon: 'bi bi-wallet2', to: '/tunjangan',
-      children: [
-        { label: 'Tunjangan Transport', to: '/tunjangan' },
-        { label: 'Pengaturan Fare', to: '/tunjangan/pengaturan' }
-      ]
+      children
     })
   }
 
   // Management System Group
   items.push({ label: 'Sistem', isHeader: true })
   
-  if (hasPermission('lihat_pengguna')) {
-    items.push({ label: 'Pengguna', icon: 'bi bi-person-badge-fill', to: '/pengguna' })
-  }
+  // Kelola User: All roles have access (CRUD for SA, RO/UO for others)
+  items.push({ label: 'Pengguna', icon: 'bi bi-person-badge-fill', to: '/pengguna' })
   
-  if (hasPermission('kelola_peran')) {
+  // Kelola Role & Modul Log: Only Superadmin
+  if (role === 'Superadmin') {
     items.push({ label: 'Role & Peran', icon: 'bi bi-shield-lock-fill', to: '/peran' })
-  }
-
-  if (hasPermission('lihat_log')) {
     items.push({ label: 'Log Aktivitas', icon: 'bi bi-clock-history', to: '/log' })
   }
 
@@ -273,6 +275,36 @@ const handleLogout = async () => {
   }
 }
 
+const authStore = useAuthStore()
+let sseSource = null
+
+const initSSE = () => {
+  if (!authStore.isLoggedIn) return
+  
+  // Close existing if any
+  if (sseSource) sseSource.close()
+
+  sseSource = new EventSource('/api/auth/stream')
+  
+  sseSource.addEventListener('logout', (e) => {
+    const data = JSON.parse(e.data)
+    Swal.fire({
+      title: 'Sesi Berakhir',
+      text: data.message,
+      icon: 'warning',
+      confirmButtonText: 'OK'
+    }).then(() => {
+      authStore.setUser(null)
+    })
+  })
+
+  sseSource.onerror = () => {
+    // Attempt to reconnect after 5 seconds if connection lost
+    sseSource.close()
+    setTimeout(initSSE, 5000)
+  }
+}
+
 onMounted(() => {
   // Auto-expand menu based on current route
   menuItems.value.forEach(item => {
@@ -282,6 +314,20 @@ onMounted(() => {
       }
     }
   })
+
+  // Start Realtime SSE connection
+  initSSE()
+})
+
+onUnmounted(() => {
+  if (sseSource) sseSource.close()
+})
+
+// Global watch to handle automatic redirection if session becomes invalid
+watch(() => authStore.isLoggedIn, (isLoggedIn) => {
+  if (!isLoggedIn) {
+    navigateTo('/login')
+  }
 })
 </script>
 

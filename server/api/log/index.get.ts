@@ -1,8 +1,9 @@
 import prisma from '../../utils/prisma'
 import { ambilQueryPaginasi, paginasiResponse } from '../../utils/response'
+import { wajibSuperadmin } from '../../utils/rbac'
 
 export default defineEventHandler(async (event) => {
-  await wajibHakAkses(event, 'lihat_log')
+  await wajibSuperadmin(event)
 
   const query = getQuery(event)
   const { halaman, perHalaman, skip } = ambilQueryPaginasi(event)

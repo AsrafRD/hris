@@ -1,19 +1,37 @@
 services:
+  db:
+    image: postgres:17-alpine
+    container_name: hr_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: Leoraf23
+      POSTGRES_PASSWORD: Logitech_Dev_123
+      POSTGRES_DB: db_pegawai
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - hr_network
+
   app:
     build: .
-    container_name: aplikasi_pegawai
+    container_name: hr_app
+    restart: always
     ports:
       - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
+    depends_on:
+      - db
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgresql://Leoraf23:Logitech_Dev_123@db_dev:5432/db_pegawai?schema=public
+      DATABASE_URL: postgresql://Leoraf23:Logitech_Dev_123@db:5432/db_pegawai?schema=public
     networks:
-      - shared_network
+      - hr_network
 
 networks:
-  shared_network:
-    external: true
+  hr_network:
+    driver: bridge
+
+volumes:
+  postgres_data:

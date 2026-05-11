@@ -51,6 +51,46 @@
         "tags": ["Pegawai"],
         "responses": { "201": { "description": "Berhasil" } }
       }
+    "/tunjangan/hitung": {
+      "post": {
+        "summary": "Hitung tunjangan transport pegawai",
+        "tags": ["Tunjangan"],
+        "security": [{ "bearerAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id_pegawai": { "type": "integer" },
+                  "bulan": { "type": "integer" },
+                  "tahun": { "type": "integer" },
+                  "hari_masuk": { "type": "integer" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Berhasil dihitung" } }
+      }
+    },
+    "/log": {
+      "get": {
+        "summary": "Ambil log aktivitas",
+        "tags": ["Log"],
+        "security": [{ "bearerAuth": [] }],
+        "responses": { "200": { "description": "Berhasil" } }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
     }
   }
 }

@@ -26,11 +26,11 @@
         </div>
       </div>
 
-      <!-- Dashboard Content based on Role -->
-      <div v-if="user?.peran.nama_peran === 'Manager HRD' || user?.peran.nama_peran === 'Superadmin'">
+      <!-- Dashboard Content for Manager HRD -->
+      <div v-if="user?.peran.nama_peran === 'Manager HRD'">
         <!-- Stats Widgets -->
         <div class="row g-4 mb-4">
-          <div v-for="(stat, index) in dashboardData.data.stats" :key="index" class="col-12 col-sm-6 col-xl-3">
+          <div v-for="(stat, index) in dashboardData?.data.stats" :key="index" class="col-12 col-sm-6 col-xl-3">
             <div class="card border-0 shadow-sm rounded-4 h-100 transition-all hover-up">
               <div class="card-body p-4 d-flex align-items-center gap-3">
                 <div :class="`bg-${stat.color}-subtle text-${stat.color}`" class="rounded-circle d-flex align-items-center justify-content-center p-3" style="width: 60px; height: 60px">
@@ -52,12 +52,6 @@
             <div class="card border-0 shadow-sm rounded-4 h-100">
               <div class="card-header bg-transparent border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0">Status Kepegawaian</h5>
-                <div class="dropdown">
-                  <button class="btn btn-light btn-sm" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Download Report</a></li>
-                  </ul>
-                </div>
               </div>
               <div class="card-body p-4 d-flex justify-content-center align-items-center" style="min-height: 300px">
                 <div style="max-width: 300px; width: 100%">
@@ -72,12 +66,6 @@
             <div class="card border-0 shadow-sm rounded-4 h-100">
               <div class="card-header bg-transparent border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
                 <h5 class="fw-bold mb-0">Distribusi Gender</h5>
-                <div class="dropdown">
-                  <button class="btn btn-light btn-sm" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Download Report</a></li>
-                  </ul>
-                </div>
               </div>
               <div class="card-body p-4 d-flex justify-content-center align-items-center" style="min-height: 300px">
                 <div style="max-width: 300px; width: 100%">
@@ -91,7 +79,7 @@
         <!-- Latest Contracts Table -->
         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
           <div class="card-header bg-white p-4 border-0 d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold mb-0">Pegawai Terbaru</h5>
+            <h5 class="fw-bold mb-0">5 Pegawai Kontrak Terbaru</h5>
             <NuxtLink to="/pegawai" class="btn btn-primary btn-sm rounded-pill px-3">Lihat Semua</NuxtLink>
           </div>
           <div class="table-responsive">
@@ -107,7 +95,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="pegawai in dashboardData.data.latestContracts" :key="pegawai.nip">
+                <tr v-for="pegawai in dashboardData?.data.latestContracts" :key="pegawai.nip">
                   <td class="ps-4 fw-semibold">{{ pegawai.nip }}</td>
                   <td>
                     <div class="d-flex align-items-center gap-2">
@@ -126,8 +114,8 @@
                     </NuxtLink>
                   </td>
                 </tr>
-                <tr v-if="dashboardData.data.latestContracts.length === 0">
-                  <td colspan="6" class="text-center py-5 text-muted">Belum ada data pegawai.</td>
+                <tr v-if="dashboardData?.data.latestContracts.length === 0">
+                  <td colspan="6" class="text-center py-5 text-muted">Belum ada data pegawai kontrak.</td>
                 </tr>
               </tbody>
             </table>
@@ -135,13 +123,15 @@
         </div>
       </div>
 
-      <!-- Default Welcome for Admin HRD -->
-      <div v-else class="text-center py-5 mt-5">
+      <!-- Welcome Message for Superadmin and Admin HRD -->
+      <div v-else class="card border-0 shadow-sm rounded-4 p-5 text-center mt-4">
         <div class="mb-4">
-          <i class="bi bi-house-door text-primary" style="font-size: 5rem"></i>
+          <div class="bg-primary-subtle text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 100px; height: 100px">
+            <i class="bi bi-person-check-fill" style="font-size: 3rem"></i>
+          </div>
         </div>
-        <h2 class="fw-bold">Selamat Datang di Sistem HR</h2>
-        <p class="text-muted lead">Gunakan menu di samping untuk mulai mengelola data pegawai dan tunjangan.</p>
+        <h2 class="fw-bold mb-3">Selamat Datang, {{ user?.nama_pengguna }}</h2>
+        <p class="text-muted fs-5 mb-0">Anda login sebagai <span class="badge bg-primary px-3 py-2 rounded-pill">{{ user?.peran.nama_peran }}</span></p>
       </div>
     </div>
   </div>

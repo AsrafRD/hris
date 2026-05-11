@@ -36,9 +36,11 @@ export function setAuthCookies(event: H3Event, accessToken: string, refreshToken
   const maxAgeAccess = 8 * 60 * 60
   const maxAgeRefresh = ingatSaya ? 7 * 24 * 60 * 60 : 24 * 60 * 60
 
+  const isProd = process.env.NODE_ENV === 'production' && !event.node.req.url?.includes('localhost')
+
   setCookie(event, 'token', accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: isProd,
     sameSite: 'lax',
     maxAge: maxAgeAccess,
     path: '/',

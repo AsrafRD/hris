@@ -10,6 +10,9 @@ export default defineEventHandler(async (event) => {
   const id = parseInt(getRouterParam(event, 'id') || '0')
   const body = await readBody(event)
 
+  // Remove empty password to avoid validation failure on partial update
+  if (body.kata_sandi === '') delete body.kata_sandi
+
   // Cek Keberadaan User
   const user = await prisma.pengguna.findUnique({ where: { id_pengguna: id } })
   if (!user) return gagalResponse('Pengguna tidak ditemukan', 404)
@@ -37,6 +40,12 @@ export default defineEventHandler(async (event) => {
     data: updateData,
     include: { peran: true }
   })
+
+  // Trigger realtime logout via SSE if deactivated
+  if (result.status_aktif === false) {
+    const { sseHub } = await import('../../utils/sse')
+    sseHub.notifyLogout(result.id_pengguna)
+  }
 
   await simpanLog(event, 'Pengguna', 'UBAH', `Memperbarui data pengguna: ${result.username}`)
 

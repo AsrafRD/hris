@@ -11,6 +11,10 @@ export const usePegawaiStore = defineStore('pegawai', {
             jabatan: [],
             jenis_pegawai: '',
             status_aktif: '',
+            masa_kerja_operator: '',
+            masa_kerja_nilai: '',
+            sortKey: 'dibuat_pada',
+            sortOrder: 'desc',
             halaman: 1,
             per_halaman: 10,
         } as any,
@@ -23,11 +27,21 @@ export const usePegawaiStore = defineStore('pegawai', {
                 const query: any = {
                     halaman: this.filters.halaman,
                     per_halaman: this.filters.per_halaman,
+                    sortKey: this.filters.sortKey,
+                    sortOrder: this.filters.sortOrder,
                 }
                 if (this.filters.cari) query.cari = this.filters.cari
                 if (this.filters.jenis_pegawai) query.jenis_pegawai = this.filters.jenis_pegawai
                 if (this.filters.status_aktif !== '') query.status_aktif = this.filters.status_aktif
-                if (this.filters.jabatan.length > 0) query.jabatan = this.filters.jabatan.join(',')
+                if (this.filters.jabatan) {
+                    query.jabatan = Array.isArray(this.filters.jabatan) 
+                        ? this.filters.jabatan.join(',') 
+                        : this.filters.jabatan
+                }
+                if (this.filters.masa_kerja_operator && this.filters.masa_kerja_nilai !== '') {
+                    query.masa_kerja_operator = this.filters.masa_kerja_operator
+                    query.masa_kerja_nilai = this.filters.masa_kerja_nilai
+                }
 
                 const response = await $fetch<ApiResponsePagination<Pegawai>>('/api/pegawai', { query })
                 if (response.sukses) {

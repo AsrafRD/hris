@@ -9,6 +9,7 @@ export default defineEventHandler(async (event) => {
   await wajibHakAkses(event, 'tambah_pengguna')
 
   const body = await readBody(event)
+  if (body.kata_sandi === '') delete body.kata_sandi
   const validated = validasiInput(penggunaSchema, body)
 
   // Cek Username Unik

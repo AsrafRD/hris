@@ -5,7 +5,7 @@ import { wajibHakAkses } from '../../utils/rbac'
 import { simpanLog } from '../../services/logService'
 
 export default defineEventHandler(async (event) => {
-  await wajibHakAkses(event, 'kelola_peran')
+  await wajibSuperadmin(event)
 
   const id = parseInt(event.context.params?.id || '0')
   if (!id) return gagalResponse('ID tidak valid', 400)

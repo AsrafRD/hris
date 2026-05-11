@@ -3,7 +3,7 @@ import { suksesResponse } from '../../utils/response'
 import { wajibHakAkses } from '../../utils/rbac'
 
 export default defineEventHandler(async (event) => {
-  await wajibHakAkses(event, 'kelola_peran')
+  await wajibSuperadmin(event)
 
   const data = await prisma.peran.findMany({
     include: {

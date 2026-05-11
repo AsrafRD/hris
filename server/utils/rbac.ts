@@ -31,3 +31,14 @@ export async function ambilSemuaHakAkses(idPeran: number): Promise<string[]> {
   })
   return peranHakAkses.map((pha: any) => pha.hak_akses.nama_akses)
 }
+
+export async function wajibSuperadmin(event: H3Event) {
+  const auth = event.context.auth
+  if (!auth || auth.nama_peran !== 'Superadmin') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Akses terbatas. Hanya Superadmin yang diizinkan.',
+      data: { sukses: false, pesan: 'Akses terbatas. Hanya Superadmin yang diizinkan.', data: null },
+    })
+  }
+}

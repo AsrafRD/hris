@@ -22,18 +22,25 @@ export default defineEventHandler(async (event) => {
     return gagalResponse('Tunjangan transport hanya berlaku untuk pegawai TETAP', 422)
   }
 
-  // 3. Cek Aturan: Jarak (5 < KM <= 25)
-  const jarak = pegawai.jarak_km || 0
-  if (jarak <= 5 || jarak > 25) {
-    return gagalResponse(`Jarak (${jarak} KM) tidak memenuhi kriteria tunjangan (Min >5KM dan Max 25KM)`, 422)
+  // 3. Cek Aturan: Jarak Minimal (> 5KM)
+  const jarakAsli = pegawai.jarak_km || 0
+  if (jarakAsli <= 5) {
+    return gagalResponse(`Jarak (${jarakAsli} KM) tidak berhak mendapatkan tunjangan (Min > 5KM)`, 422)
   }
 
-  // 4. Cek Aturan: Minimal hadir 19 hari
+  // 4. Cek Aturan: Jarak Maksimal (Capped at 25KM)
+  // Kelebihan jarak tidak dihitung tunjangan
+  const jarakDibatasi = Math.min(jarakAsli, 25)
+
+  // 5. Aturan Pembulatan KM: < 0.5 turun, >= 0.5 naik
+  const jarakBulat = Math.round(jarakDibatasi)
+
+  // 6. Cek Aturan: Minimal hadir 19 hari
   if (validated.hari_masuk < 19) {
     return gagalResponse('Minimal kehadiran untuk tunjangan transport adalah 19 hari', 422)
   }
 
-  // 5. Ambil tarif aktif
+  // 7. Ambil tarif aktif (Base Fare)
   const pengaturan = await prisma.pengaturan_tunjangan.findFirst({
     where: { status_aktif: true },
     orderBy: { dibuat_pada: 'desc' }
@@ -43,11 +50,8 @@ export default defineEventHandler(async (event) => {
 
   const tarif = pengaturan.tarif_per_km
   
-  // 6. Hitung: tunjangan = base_fare × km × hari_masuk
-  let totalRaw = tarif * jarak * validated.hari_masuk
-  
-  // 7. Pembulatan: <0.5 turun, >=0.5 naik
-  const total = Math.round(totalRaw)
+  // 8. Hitung: tunjangan = base_fare × km_bulat × hari_masuk
+  const total = tarif * jarakBulat * validated.hari_masuk
 
   // 8. Simpan/Upsert
   const result = await prisma.tunjangan_transport.upsert({
@@ -59,7 +63,7 @@ export default defineEventHandler(async (event) => {
       }
     },
     update: {
-      jarak_km: jarak,
+      jarak_km: jarakBulat,
       hari_masuk: validated.hari_masuk,
       tarif_per_km: tarif,
       total_tunjangan: total
@@ -68,7 +72,7 @@ export default defineEventHandler(async (event) => {
       id_pegawai: validated.id_pegawai,
       bulan: validated.bulan,
       tahun: validated.tahun,
-      jarak_km: jarak,
+      jarak_km: jarakBulat,
       hari_masuk: validated.hari_masuk,
       tarif_per_km: tarif,
       total_tunjangan: total
